@@ -1,0 +1,8 @@
+/build/
+*.p12
+*.jks
+*.keystore
+adbkey*
+*.pem
+.env*
+__pycache__/
