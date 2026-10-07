@@ -2,7 +2,7 @@
 
 Real TCL TV brightness on a daily schedule. Android TV app with a remote-friendly settings screen and a pastel WW monogram.
 
-**[Download the signed APK](https://github.com/natural0101/wwave/releases/latest)**
+**[Download the signed APK](https://github.com/natural0101/wwave/releases/download/v1.6/WWave-1.6.apk)** · [Release notes](https://github.com/natural0101/wwave/releases/tag/v1.6)
 
 ![WWave settings](docs/settings.png)
 
