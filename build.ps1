@@ -35,7 +35,7 @@ $aligned=Join-Path $build 'ww-aligned.apk'
 if($LASTEXITCODE -ne 0){throw 'zipalign failed'}
 if($Unsigned){Write-Output $aligned;return}
 if(-not $KeyStore -or -not $env:WW_KEYSTORE_PASSWORD){throw 'Set WW_KEYSTORE and WW_KEYSTORE_PASSWORD; the signing key is never stored in this repository.'}
-$signed=Join-Path $build 'WWave-1.6.apk'
+$signed=Join-Path $build 'WWave-1.7.apk'
 & (Join-Path $bin 'java.exe') -jar (Join-Path $tools 'lib/apksigner.jar') sign --ks $KeyStore --ks-pass env:WW_KEYSTORE_PASSWORD --out $signed $aligned
 if($LASTEXITCODE -ne 0){throw 'APK signing failed'}
 & (Join-Path $bin 'java.exe') -jar (Join-Path $tools 'lib/apksigner.jar') verify $signed
