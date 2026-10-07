@@ -9,6 +9,7 @@ Verified on the device:
 - Upgrade from the installed app retained its existing key, day/night levels 30/10, schedule 21:00–09:00 and enabled state.
 - Real brightness cycle through accelerated alarms: **30 → 10 → 30**, read back from the native TCL menu. The PC ADB server was stopped before each alarm fired. Intermediate readback used a brief reconnect between the two alarms.
 - The app screen returned after the menu operation. The header contains a single pastel logo with transparency and no duplicate WW text.
+- FLauncher found WWave in its TV Applications settings. Adding it with the category plus button created a visible home tile; opening that tile resumed `local.tclbrightness/.MainActivity`.
 - The visible disable button returned day brightness, disabled the schedule and left **0 active alarms / 0 ScheduleService records**. The schedule was re-enabled afterwards.
 - The signed APK passed `apksigner verify`; its ZIP entries contain no ADB keys or keystores.
 
