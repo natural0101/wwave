@@ -2,7 +2,7 @@ package local.tclbrightness;
 import android.content.*;
 public class ControlReceiver extends BroadcastReceiver {
  public void onReceive(Context c,Intent i){final PendingResult pending=goAsync();final String op=i.getStringExtra("op");new Thread(()->{try{String result;
-  if("connection".equals(op)){result="TCL_ACTUAL="+TclBrightness.read();}
+  if("connection".equals(op)){result="TCL_ACTUAL="+TclBrightness.read(c)+" BACKEND="+TclBrightness.describe(c)+" WRITE_VERIFIED="+TclBrightness.writeVerified(c);}
   else if("set".equals(op)){result="TCL_ACTUAL="+TclBrightness.apply(c,i.getIntExtra("level",-1));}
   else if("status".equals(op)){result=c.getSharedPreferences("schedule",0).getAll().toString();}
   else if("testTimers".equals(op)){ScheduleService.testTimers(c);result="Test alarms scheduled";}

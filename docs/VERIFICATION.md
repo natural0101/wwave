@@ -1,30 +1,31 @@
-# WWave 1.7 verification — 2026-10-07
+# WWave 1.8 verification — 2026-10-11
 
-Device: TCL G10 / C6KS, Android 12. Package `local.tclbrightness`, versionCode 8, target SDK 32.
+Scope: broader TCL firmware handling, truthful compatibility detection, failure handling, schedule permission handling and TV layout. This is not certification of multiple physical TV models.
 
-Verified on the device:
+## PASS on real hardware
 
-- Native TCL shared library: an isolated app declared `com.tcl.tv.display`, read back **10/100**, then changed **10 → 15 → 10** using `TvBacklightManager.setBacklight(EN_APPLY_CURRENT, level, EN_TCL_ACT_EXEC_SAVE)`. No shell Binder calls or elevated app permissions were used. The diagnostic app was uninstalled.
-- Upgrade to 1.7 retained enabled state, day/night **30/10**, schedule **21:00–09:00**. Package manager reports versionCode 8 and resolves `/system_ext/framework/com.tcl.tv.display.jar`.
-- WWave service changed **10 → 30 → 10**; native readback confirmed each level. `com.fgl27.twitch/.PlayerActivity`, task 932, remained resumed.
-- Accelerated alarms performed **30 → 10 → 30**. PC ADB server was stopped before each firing, briefly reconnected only for readback. Native service logs: night at **21:20:21**, day at **21:21:01**. Twitch remained the foreground activity.
-- Visible **«Проверить доступ»** button showed **10/100**. Visible **«Отключить и вернуть дневную яркость»** button returned **30/100**, set `enabled=false`, left no pending WWave alarms and no ScheduleService records.
-- Re-enabled through the visible switch: `enabled=true`, `working=false`, `lastError=`; native value **10/100**. Two daily alarms observed for **2026-10-08 09:00** and **2026-10-08 21:00**. Back returned to the original Twitch activity/task.
-- Invalid diagnostic level **101** was rejected and native brightness remained **10/100**.
-- Actual settings screenshot inspected for text, logo, controls and status. No duplicate logo text or square background.
-- Signed APK passed `apksigner verify`. Source/APK have no ADB client, menu automation, TaskRestore or INTERNET permission. The TCL binary library is not redistributed.
+Device: TCL G10 / C6KS (Build.MODEL reports Smart TV Pro), Android 12. APK versionCode 9, target SDK 32.
 
-Commands (ADB is needed only for these diagnostics, not app operation):
+- Upgrade retained enabled state, day/night 30/10 and 21:00–09:00.
+- Detection chose TCL PQ SDK. Initial `connection` returned 30 and `WRITE_VERIFIED=false`; after real **30→31→30**, it returned `WRITE_VERIFIED=true`. YouTube task 958 remained resumed.
+- Visible compatibility dialog read 30/100, identified TCL PQ SDK, Android 12, confirmed tested writing and exact-timer permission.
+- Exact alarm app-op was temporarily changed from `default` to `deny`. Starting the schedule returned a clear permission error, persisted `enabled=false` and did not alter brightness. Compatibility dialog showed the missing permission and the permission-settings button.
+- The first permission-revocation trial also exposed Android's ForegroundServiceStartNotAllowedException. Before final build, startup refusal handling was repaired in ScheduleService/MainActivity/BootReceiver/AlarmReceiver. Permission and enabled state were restored; the final trial passed.
+- Visible night-test and disable controls changed 30→10→30. Disable left `enabled=false`, no pending WWave alarms and no active ScheduleService.
+- Re-enabled with the visible switch. Accelerated alarms then performed **30→10→30**, with PC ADB stopped before each firing and briefly reconnected only for native readback. Final readback: 30; day result confirms preceding 10. No lastError, working=false, enabled=true.
+- Daily alarms restored: 2026-10-11 21:00 and 2026-10-12 09:00. Original exact-alarm app-op `default` restored. YouTube resumed.
 
-```text
-adb shell am broadcast -n local.tclbrightness/.ControlReceiver --es op connection
-adb shell am broadcast -n local.tclbrightness/.ControlReceiver --es op status
-adb shell am broadcast -n local.tclbrightness/.ControlReceiver --es op testTimers
-adb shell dumpsys alarm
-adb shell dumpsys activity services local.tclbrightness
-adb shell dumpsys activity activities
-```
+## PASS with explicit test conditions
 
-The generic Android command `cmd display set-brightness` was tested briefly and restored to the original 0.39763778. Its physical effect was not confirmed and it is not used in WWave. TCL native API readback is the evidence for the implemented backend.
+- JVM suite: **34 assertions** in `tests/CompatibilityTests.java`. Modern and legacy contracts, absent classes, LinkageError, denied reads, invalid writer signatures, invalid levels, no-op detection, write refusal, ignored writes, partial writes and rollback, failed rollback, original zero restoration, midnight/day-window boundaries and invalid schedule inputs.
+- Legacy TVManager uses a synthetic fixture. No actual legacy TV was tested.
+- Isolated Android package deliberately omitted all OEM uses-library declarations. Read returned an unsupported error, UI disabled schedule/night/day controls, attempted start left enabled=false and no service. Package was uninstalled.
+- Same isolated Activity used an app-only 640×360dp/480dpi configuration, without changing TV-wide resolution or density. Cards stacked vertically and DPAD navigation scrolled to the disable button and compatibility status. Ordinary 1920×1080 view was also inspected.
+- This isolated APK was built before the final background-start repair; the tested absence-of-library and layout paths were unchanged by that repair. It is not a distributed artifact.
+- Signed release APK passed apksigner verify. No OEM binaries, keys, ADB client, INTERNET permission, overlays or menu automation.
 
-Not verified: full reboot, screen-off/wake cycle, HDMI/HDR/profile switching, physical luminance measurement, other TCL firmware or Android versions. The setter targets the current picture profile. No universal compatibility claim.
+## UNKNOWN
+
+Physical legacy TCL/iFFALCON; other TCL firmware; Sony/Hisense/Philips/Xiaomi hardware; Android 8–11/13+ runtime; full reboot, screen-off/wake, HDMI/SDR/HDR/profile switching, physical luminance measurements. Android 13+ receiver flag is compiled, not exercised on Android 13+.
+
+See `COMPATIBILITY.md` for the candidate/support matrix. New model support requires real write/readback and restore tests, not brand-name matching.
